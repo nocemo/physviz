@@ -78,10 +78,22 @@ add_executable(physviz
   src/physics/PBDTypes.h
   src/physics/PBDWorld.h
   src/physics/PBDWorld.cpp
+  src/render/Shader.h
+  src/render/Shader.cpp
+  src/render/Mesh.h
+  src/render/Mesh.cpp
+  src/render/Primitives.h
+  src/render/Primitives.cpp
 )
 
 target_include_directories(physviz PRIVATE src)
 target_link_libraries(physviz PRIVATE glfw glad glm::glm imgui_lib)
+
+add_custom_command(TARGET physviz POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:physviz>/assets
+)
 
 # Windows: avoid console hiding; comment out if you prefer console only
 # set_target_properties(physviz PROPERTIES WIN32_EXECUTABLE TRUE)

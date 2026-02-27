@@ -10,6 +10,9 @@
 #include "physics/Integrator.h"
 #include "sim/AppSim.h"
 #include "render/CameraOrbit.h"
+#include "render/Shader.h"
+#include "render/Mesh.h"
+#include "render/Primitives.h"
 
 // ImGui
 #include "imgui.h"
@@ -98,6 +101,17 @@ int main() {
         glViewport(0, 0, w, h);
         glEnable(GL_DEPTH_TEST);
 
+        Shader basic;
+        basic.loadFromFiles("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+
+        Mesh plane;
+        {
+            std::vector<VertexP> v;
+            std::vector<unsigned int> i;
+            MakePlaneXZ(v, i, 20.0f);
+            plane.upload(v, i);
+        }
+
         // Build a simple orbit camera
         glm::vec3 target(0, 0, 0);
         glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(camYaw), glm::vec3(0,1,0));
@@ -106,6 +120,17 @@ int main() {
         glm::mat4 view = cam.view();
         glm::mat4 proj = cam.proj((float)w / (float)h);
         glm::mat4 viewProj = proj * view;
+
+
+        // init after gladLoadGL() succeeds
+        Shader sh;
+        sh.loadFromFiles("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+
+        // each frame
+        sh.use();
+        sh.setMat4("uViewProj", viewProj);
+        sh.setMat4("uModel", glm::mat4(1.0f));
+        sh.setVec3("uColor", glm::vec3(1,1,1));
 
         // Build debug geometry
         dbg.clear();
@@ -126,6 +151,14 @@ int main() {
         // --- Render ---
         glClearColor(0.08f, 0.09f, 0.10f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (basic.valid() && plane.valid()) {
+            basic.use();
+            basic.setMat4("uViewProj", viewProj);
+            basic.setMat4("uModel", glm::mat4(1.0f));
+            basic.setVec3("uColor", glm::vec3(0.7f, 0.7f, 0.7f));
+            plane.draw();
+        }
 
         dbg.draw(viewProj);
 
