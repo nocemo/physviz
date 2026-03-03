@@ -1,15 +1,16 @@
 #include "Primitives.h"
 
-void MakePlaneXZ(std::vector<VertexP>& outV, std::vector<unsigned int>& outI, float halfSize)
+void MakePlaneXZ(std::vector<VertexPN>& outV, std::vector<unsigned int>& outI, float halfSize)
 {
     outV.clear();
     outI.clear();
 
-    outV.push_back({ {-halfSize, 0.0f, -halfSize} }); // 0
-    outV.push_back({ { halfSize, 0.0f, -halfSize} }); // 1
-    outV.push_back({ { halfSize, 0.0f,  halfSize} }); // 2
-    outV.push_back({ {-halfSize, 0.0f,  halfSize} }); // 3
+    glm::vec3 n(0.0f, 1.0f, 0.0f);
 
-    // two triangles
+    outV.push_back({ {-halfSize, 0.0f, -halfSize}, n }); // 0
+    outV.push_back({ { halfSize, 0.0f, -halfSize}, n }); // 1
+    outV.push_back({ { halfSize, 0.0f,  halfSize}, n }); // 2
+    outV.push_back({ {-halfSize, 0.0f,  halfSize}, n }); // 3
+
     outI = { 0, 1, 2,  0, 2, 3 };
 }

@@ -3,8 +3,9 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-struct VertexP {
+struct VertexPN {
     glm::vec3 pos;
+    glm::vec3 normal;
 };
 
 class Mesh {
@@ -15,7 +16,7 @@ public:
     Mesh(const Mesh&) = delete;
     Mesh& operator=(const Mesh&) = delete;
 
-    bool upload(const std::vector<VertexP>& vertices,
+    bool upload(const std::vector<VertexPN>& vertices,
                 const std::vector<unsigned int>& indices);
 
     void destroy();

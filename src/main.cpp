@@ -76,6 +76,9 @@ int main() {
     AppSim sim;
     sim.init();
 
+    Shader lit;
+    Mesh plane;
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -101,12 +104,10 @@ int main() {
         glViewport(0, 0, w, h);
         glEnable(GL_DEPTH_TEST);
 
-        Shader basic;
-        basic.loadFromFiles("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+        lit.loadFromFiles("assets/shaders/lit.vert", "assets/shaders/lit.frag");
 
-        Mesh plane;
         {
-            std::vector<VertexP> v;
+            std::vector<VertexPN> v;
             std::vector<unsigned int> i;
             MakePlaneXZ(v, i, 20.0f);
             plane.upload(v, i);
@@ -120,17 +121,6 @@ int main() {
         glm::mat4 view = cam.view();
         glm::mat4 proj = cam.proj((float)w / (float)h);
         glm::mat4 viewProj = proj * view;
-
-
-        // init after gladLoadGL() succeeds
-        Shader sh;
-        sh.loadFromFiles("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-
-        // each frame
-        sh.use();
-        sh.setMat4("uViewProj", viewProj);
-        sh.setMat4("uModel", glm::mat4(1.0f));
-        sh.setVec3("uColor", glm::vec3(1,1,1));
 
         // Build debug geometry
         dbg.clear();
@@ -152,13 +142,20 @@ int main() {
         glClearColor(0.08f, 0.09f, 0.10f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (basic.valid() && plane.valid()) {
-            basic.use();
-            basic.setMat4("uViewProj", viewProj);
-            basic.setMat4("uModel", glm::mat4(1.0f));
-            basic.setVec3("uColor", glm::vec3(0.7f, 0.7f, 0.7f));
-            plane.draw();
-        }
+        lit.use();
+        lit.setMat4("uViewProj", viewProj);
+        lit.setMat4("uModel", glm::mat4(1.0f));
+        lit.setVec3("uBaseColor", glm::vec3(0.75f, 0.75f, 0.75f));
+
+        // light params (まず固定でOK)
+        lit.setVec3("uLightDir", glm::normalize(glm::vec3(0.0f, -1.0f, 0.5f)));
+        lit.setVec3("uLightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        lit.setFloat("uAmbient", 0.18f);
+
+        // camera position（あなたのカメラから取る）
+        lit.setVec3("uViewPos", camPos);
+
+        plane.draw();
 
         dbg.draw(viewProj);
 

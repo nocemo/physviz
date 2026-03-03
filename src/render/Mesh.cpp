@@ -12,7 +12,7 @@ void Mesh::destroy() {
     m_indexCount = 0;
 }
 
-bool Mesh::upload(const std::vector<VertexP>& vertices,
+bool Mesh::upload(const std::vector<VertexPN>& vertices,
                   const std::vector<unsigned int>& indices)
 {
     destroy();
@@ -30,7 +30,7 @@ bool Mesh::upload(const std::vector<VertexP>& vertices,
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER,
-                 (GLsizeiptr)(vertices.size() * sizeof(VertexP)),
+                 (GLsizeiptr)(vertices.size() * sizeof(VertexPN)),
                  vertices.data(),
                  GL_STATIC_DRAW);
 
@@ -44,8 +44,14 @@ bool Mesh::upload(const std::vector<VertexP>& vertices,
     // layout(location=0) vec3 aPos
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-                          sizeof(VertexP),
-                          (void*)offsetof(VertexP, pos));
+                        sizeof(VertexPN),
+                        (void*)offsetof(VertexPN, pos));
+
+    // layout(location=1) vec3 aNormal
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
+                        sizeof(VertexPN),
+                        (void*)offsetof(VertexPN, normal));
 
     glBindVertexArray(0);
     return true;
