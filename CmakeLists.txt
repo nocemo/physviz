@@ -84,6 +84,8 @@ add_executable(physviz
   src/render/Mesh.cpp
   src/render/Primitives.h
   src/render/Primitives.cpp
+  src/render/Draw.h
+  src/render/RenderQueue.h
 )
 
 target_include_directories(physviz PRIVATE src)

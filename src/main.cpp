@@ -13,6 +13,8 @@
 #include "render/Shader.h"
 #include "render/Mesh.h"
 #include "render/Primitives.h"
+#include "render/Draw.h"
+#include "render/RenderQueue.h"
 
 // ImGui
 #include "imgui.h"
@@ -77,7 +79,21 @@ int main() {
     sim.init();
 
     Shader lit;
+    lit.loadFromFiles("assets/shaders/lit.vert", "assets/shaders/lit.frag");
     Mesh plane;
+    {
+        std::vector<VertexPN> v;
+        std::vector<unsigned int> i;
+        MakePlaneXZ(v, i, 20.0f);
+        plane.upload(v, i);
+    }
+    Mesh sphere;
+    {
+        std::vector<VertexPN> v;
+        std::vector<unsigned int> i;
+        MakeUvSphere(v, i, 1.0f, 24, 16);
+        sphere.upload(v, i);
+    }
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -103,15 +119,6 @@ int main() {
         glfwGetFramebufferSize(window, &w, &h);
         glViewport(0, 0, w, h);
         glEnable(GL_DEPTH_TEST);
-
-        lit.loadFromFiles("assets/shaders/lit.vert", "assets/shaders/lit.frag");
-
-        {
-            std::vector<VertexPN> v;
-            std::vector<unsigned int> i;
-            MakePlaneXZ(v, i, 20.0f);
-            plane.upload(v, i);
-        }
 
         // Build a simple orbit camera
         glm::vec3 target(0, 0, 0);
@@ -142,20 +149,25 @@ int main() {
         glClearColor(0.08f, 0.09f, 0.10f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        lit.use();
-        lit.setMat4("uViewProj", viewProj);
-        lit.setMat4("uModel", glm::mat4(1.0f));
-        lit.setVec3("uBaseColor", glm::vec3(0.75f, 0.75f, 0.75f));
+        LitParams lp;
+        lp.viewProj = viewProj;
+        lp.viewPos  = camPos;
+        lp.lightDir = glm::vec3(0.0f, -1.0f, 0.5f);
+        lp.lightColor = glm::vec3(1.0f);
+        lp.ambient = 0.12f;
 
-        // light params (まず固定でOK)
-        lit.setVec3("uLightDir", glm::normalize(glm::vec3(0.0f, -1.0f, 0.5f)));
-        lit.setVec3("uLightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-        lit.setFloat("uAmbient", 0.18f);
+        RenderQueue rq;
+        rq.clear();
 
-        // camera position（あなたのカメラから取る）
-        lit.setVec3("uViewPos", camPos);
+        // plane
+        rq.add(plane, glm::mat4(1.0f), glm::vec3(0.75f));
 
-        plane.draw();
+        // sphere
+        glm::mat4 sm = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        rq.add(sphere, sm, glm::vec3(0.2f, 0.6f, 1.0f));
+
+        // 描画（まとめて）
+        DrawQueueLit(lit, rq, lp);
 
         dbg.draw(viewProj);
 
