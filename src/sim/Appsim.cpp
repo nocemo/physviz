@@ -96,8 +96,12 @@ void AppSim::reset() {
     p.velocity = glm::vec3(2.0f, 0.0f, 0.0f);
     p.mass = 1.0f;
 
-    //setupRigidDemo();
-    setupPbdDemo();
+    if (mode == DemoMode::RigidWorld) {
+        setupRigidDemo();
+    }
+    else if (mode == DemoMode::PBD) {
+        setupPbdDemo();
+    }
 }
 
 void AppSim::update(float /*realDtSeconds*/) {
@@ -164,22 +168,22 @@ void AppSim::buildDebugDraw(DebugDraw& dbg) const {
     }
 
     if (mode == DemoMode::PBD) {
-    // ground line
-    dbg.addLine(glm::vec3(-50.0f, pbd.groundY, 0.0f), glm::vec3(50.0f, pbd.groundY, 0.0f), glm::vec3(0.8f));
+        // ground line
+        dbg.addLine(glm::vec3(-50.0f, pbd.groundY, 0.0f), glm::vec3(50.0f, pbd.groundY, 0.0f), glm::vec3(0.8f));
 
-    // constraints
-    for (const auto& c : pbd.dist) {
-        const auto& p0 = pbd.particles[c.i0];
-        const auto& p1 = pbd.particles[c.i1];
-        dbg.addLine(p0.x, p1.x, glm::vec3(0.6f, 0.9f, 0.6f));
-    }
+        // constraints
+        for (const auto& c : pbd.dist) {
+            const auto& p0 = pbd.particles[c.i0];
+            const auto& p1 = pbd.particles[c.i1];
+            dbg.addLine(p0.x, p1.x, glm::vec3(0.6f, 0.9f, 0.6f));
+        }
 
-    // particles
-    for (const auto& p : pbd.particles) {
-        glm::vec3 col = (p.invMass == 0.0f) ? glm::vec3(1.0f, 0.4f, 0.2f) : glm::vec3(1.0f, 1.0f, 0.2f);
-        dbg.addCross(p.x, 0.08f, col);
-    }
-    return;
+        // particles
+        for (const auto& p : pbd.particles) {
+            glm::vec3 col = (p.invMass == 0.0f) ? glm::vec3(1.0f, 0.4f, 0.2f) : glm::vec3(1.0f, 1.0f, 0.2f);
+            dbg.addCross(p.x, 0.08f, col);
+        }
+        return;
     }
 
     // floor line
